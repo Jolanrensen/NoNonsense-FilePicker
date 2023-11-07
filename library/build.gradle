@@ -6,15 +6,16 @@
 
 plugins {
     id 'com.android.library'
+    id "kotlin-android"
 }
 
 android {
-    compileSdk 28
-    buildToolsVersion "30.0.3"
+    compileSdk 34
+    buildToolsVersion = "34.0.0"
 
     defaultConfig {
         minSdk 21
-        targetSdk 28
+        targetSdk 34
         versionCode gitCommitCount
         versionName gitTag
     }
@@ -35,11 +36,12 @@ android {
     lint {
         abortOnError false
     }
+    namespace 'com.nononsenseapps.filepicker'
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.3.1'
-    implementation 'androidx.recyclerview:recyclerview:1.2.1'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
 
     testImplementation 'junit:junit:4.13.2'
 }

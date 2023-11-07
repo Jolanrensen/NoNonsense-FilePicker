@@ -12,9 +12,10 @@ buildscript {
         mavenCentral()
         maven { url "https://jitpack.io" }
     }
-
+    ext.kotlin_version = '1.9.20'
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.1'
+        classpath 'com.android.tools.build:gradle:8.1.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
@@ -28,5 +29,9 @@ allprojects {
 
 ext {
     gitTag = '5.0.0'
-    gitCommitCount = Integer.parseInt('git rev-list --count HEAD'.execute([], project.rootDir).text.trim())
+    try {
+        gitCommitCount = Integer.parseInt('git rev-list --count HEAD'.execute([], project.rootDir).text.trim())
+    } catch (Exception e) {
+        gitCommitCount = 1
+    }
 }

@@ -7,21 +7,35 @@
 package com.nononsenseapps.filepicker;
 
 import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
+import android.os.Environment;
 import android.os.FileObserver;
+
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission;
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.loader.content.AsyncTaskLoader;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.SortedList;
 import androidx.recyclerview.widget.SortedListAdapterCallback;
+
+import android.provider.Settings;
 import android.widget.Toast;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * An implementation of the picker which allows you to select a file from the internal/external
@@ -40,7 +54,7 @@ public class FilePickerFragment extends AbstractFilePickerFragment<File> {
      *
      * @param showHiddenItems whether hidden items should be shown or not
      */
-    public void showHiddenItems(boolean showHiddenItems){
+    public void showHiddenItems(boolean showHiddenItems) {
         this.showHiddenItems = showHiddenItems;
     }
 
@@ -50,18 +64,27 @@ public class FilePickerFragment extends AbstractFilePickerFragment<File> {
      * @return true if hidden items are shown, otherwise false
      */
 
-    public boolean areHiddenItemsShown(){
+    public boolean areHiddenItemsShown() {
         return showHiddenItems;
     }
 
     /**
-     * @return true if app has been granted permission to write to the SD-card.
+     * @return true if app has been granted permission to write to the SD-card on android < SDK 33.
+     * On SDK 33 and above, this will check just read permissions.
      */
     @Override
     protected boolean hasPermission(@NonNull File path) {
-        return PackageManager.PERMISSION_GRANTED ==
-                ContextCompat.checkSelfPermission(getContext(),
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        boolean hasPermission;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            hasPermission = Environment.isExternalStorageManager();
+        } else {
+            hasPermission = ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED;
+        }
+
+        return hasPermission;
     }
 
     /**
@@ -76,7 +99,17 @@ public class FilePickerFragment extends AbstractFilePickerFragment<File> {
 //        }
 
         mRequestedPath = path;
-        requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestManageAllFilesAccessPermissionLauncher.launch(
+                    new Intent(
+                            Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                            Uri.parse("package:" + requireContext().getPackageName())
+                    )
+            );
+        } else {
+            requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
+
     }
 
     /**
@@ -86,6 +119,24 @@ public class FilePickerFragment extends AbstractFilePickerFragment<File> {
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new RequestPermission(), isGranted -> {
                 if (isGranted) {
+                    // Do refresh
+                    if (mRequestedPath != null) {
+                        refresh(mRequestedPath);
+                    }
+                } else {
+                    Toast.makeText(getContext(), R.string.nnf_permission_external_write_denied,
+                            Toast.LENGTH_SHORT).show();
+                    // Treat this as a cancel press
+                    if (mListener != null) {
+                        mListener.onCancelled();
+                    }
+                }
+            });
+
+    @RequiresApi(api = Build.VERSION_CODES.R)
+    private final ActivityResultLauncher<Intent> requestManageAllFilesAccessPermissionLauncher =
+            registerForActivityResult(new StartActivityForResult(), result -> {
+                if (Environment.isExternalStorageManager()) {
                     // Do refresh
                     if (mRequestedPath != null) {
                         refresh(mRequestedPath);

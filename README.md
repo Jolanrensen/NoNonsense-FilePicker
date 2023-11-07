@@ -1,3 +1,9 @@
+## Note:
+This is a fork of NoNonsense-FilePicker made by me to support Android 13+ (API 33+) and target API 34.
+It requests and uses "android.permission.MANAGE_EXTERNAL_STORAGE" as permission to access the files.
+However, Google might block your app from the play store for using this permission!
+See https://support.google.com/googleplay/android-developer/answer/10467955?hl=en.
+
 ## Note: avoid using as SD-card file picker on Kitkat+
 
 In Kitkat or above, use Android's built-in file-picker instead. Google has restricted the ability of external libraries like this from creating directories on external SD-cards in Kitkat and above which will manifest itself as a crash.
@@ -64,7 +70,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.TeamNewPipe:NoNonsense-FilePicker:x.y.z'
+    implementation 'com.github.Jolanrensen:NoNonsense-FilePicker:x.y.z'
 }
 ```
 
@@ -75,6 +81,8 @@ dependencies {
 
 ```xml
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+<!-- On Android 13+ this is required :(, however google might block you: https://support.google.com/googleplay/android-developer/answer/10467955?hl=en -->
+<uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
 ```
 
 ### Include a provider element

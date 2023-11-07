@@ -183,26 +183,10 @@ public abstract class AbstractFilePickerFragment<T> extends Fragment
         recyclerView.setAdapter(mAdapter);
 
         view.findViewById(R.id.nnf_button_cancel)
-                .setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(final View v) {
-                        onClickCancel(v);
-                    }
-                });
+                .setOnClickListener(this::onClickCancel);
 
-        view.findViewById(R.id.nnf_button_ok).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(final View v) {
-                        onClickOk(v);
-                    }
-                });
-        view.findViewById(R.id.nnf_button_ok_newfile).setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        onClickOk(v);
-                    }
-                });
+        view.findViewById(R.id.nnf_button_ok).setOnClickListener(this::onClickOk);
+        view.findViewById(R.id.nnf_button_ok_newfile).setOnClickListener(this::onClickOk);
 
         mNewFileButtonContainer = view.findViewById(R.id.nnf_newfile_button_container);
         mRegularButtonContainer = view.findViewById(R.id.nnf_button_container);
@@ -900,12 +884,7 @@ public abstract class AbstractFilePickerFragment<T> extends Fragment
 
             checkbox = (CheckBox) v.findViewById(R.id.checkbox);
             checkbox.setVisibility((nf || singleClick) ? View.GONE : View.VISIBLE);
-            checkbox.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onClickCheckBox(CheckableViewHolder.this);
-                }
-            });
+            checkbox.setOnClickListener(v1 -> onClickCheckBox(CheckableViewHolder.this));
         }
 
         /**
