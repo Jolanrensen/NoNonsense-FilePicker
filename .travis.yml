@@ -1,14 +1,14 @@
 sudo: false
 language: android
 jdk:
-  - oraclejdk8
+  - oraclejdk11
 env:
 android:
   components:
     - platform-tools
     - tools
-    - build-tools-26.0.2
-    - android-24
+    - build-tools-34.0.0
+    - android-34
 #    - sys-img-armeabi-v7a-android-23
     - extra-android-support
     - extra-google-m2repository
